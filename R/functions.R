@@ -1,0 +1,331 @@
+################################################################################
+# brainAgeShiftR functions                                                     #
+################################################################################
+
+
+# Creates a brainAgeShift object.
+# counts needs to be a genome-wide counts matrix with samples in columns and
+# genes in rows.
+# metadata needs to be a data.frame with at least the variable of interest the
+# user wants to make comparisons of transcriptomic age, with the row names
+# matching the column names of the counts matrix. If metadata is not given the
+# counts still can be normalized and ages can be predicted, but downstream
+# analyses won't be performed.
+# variable. The variable where the comparisons factors are stored.
+# comparisons. either a vector of length = 2, or a list of vectors of length 2.
+# The first item in each comparison should be the initial or base state in the
+# comparison, and the second one the final or altered state, so in the output
+# the log2FC will be positive if in the samples belonging to comparisons[[n]][2]
+# are higher, and the other way around.
+#' @export
+create_brainAgeShiftObj <- function(counts,
+                                    metadata = NULL,
+                                    variable = NULL,
+                                    comparisons = NULL){
+        #counts <- counts
+        #metadata <- soft_4object
+        #variable = "pheno"
+        #comparisons = list(c("HC", "LOAD"),
+        #                  c("HC", "ADAD"))
+        if(!is.null(metadata)){
+                if (is.null(variable) | is.null(comparisons)){
+                        stop("If metadata is included both variable and comparisons need to be indicated.",
+                             call. = F)
+                }
+                if (ncol(counts) != nrow(metadata)){
+                        stop("Number of columns of counts and number of rows of metadata differ.",
+                             call. = F)
+                }
+                if (!all(colnames(counts) == rownames(metadata))){
+                        stop("Column names of counts and row mames of metadata differ.",
+                             call. = F)
+                }
+                if (!variable %in% colnames(metadata)){
+                        stop("The introduced variable is not included in the metadata.",
+                             call. = F)
+                }
+                if (!is.list(comparisons)){
+                        comparisons <- list(comparisons)
+                }
+                if (any(unlist(lapply(comparisons,
+                                      function(x) length(x) != 2)))){
+                        stop("Comparisons must be of length 2.",
+                             call. = F)
+                }
+                comps_uniq <- unique(unlist(comparisons))
+                if (any(!comps_uniq %in% metadata[, variable])){
+                        notInMetDat <- comps_uniq[!comps_uniq %in% metadata[, variable]]
+                        paste(notInMetDat, collapse = ", ")
+                        stop(sprintf("%s not included in the %s.",
+                                     notInMetDat,
+                                     variable),
+                             call. = F)
+                }
+                if(any(!metadata[, variable] %in% comps_uniq)){
+                        print(sprintf("Filtering out the samples that are not labeled as %s.",
+                                      paste(comps_uniq, collapse = ", ")))
+                        keep <- metadata[, variable] %in% comps_uniq
+                        metadata <- metadata[keep, ]
+                        counts <- counts[, keep]
+                }
+        }else{
+                warning("No metadata, variable and comparison indicated. This object only will work for doing predictions with the clock.")
+                if (!is.null(variable)){
+                        warning("If metadata is not provided variable won't be used.")
+                        variable <- NULL
+                }
+                if (!is.null(comparisons)){
+                        warning("If metadata is not provided comparisons won't be used.")
+                        comparisons <- NULL
+                }
+        }
+        obj <- list(counts = counts,
+                    norm_counts = NULL,
+                    metadata = metadata,
+                    variable = variable,
+                    comparisons = comparisons,
+                    stats = NULL,
+                    sign_genes = NULL)
+        obj$default_slot <- "counts"
+        class(obj) <- "brainAgeShiftObj"
+        return(obj)
+}
+
+# Normalize the counts of the brainAgeShift object to make them suitable
+# to predict ages with it.
+normalizeCounts <- function(obj, useTrainMeans = F){
+        UseMethod("normalizeCounts")
+}
+
+normalizeCounts.brainAgeShiftObj <- function(obj, useTrainMeans = F){
+        #obj <- brainAgeShiftObj
+        bg_genes <- read.csv(bg_file, row.names = 1)$geneID
+        obj$norm_counts <- obj$counts
+        trainGenes_notInDat <- bg_genes[!bg_genes %in% rownames(obj$counts)]
+        obj$norm_counts <- obj$norm_counts[rownames(obj$norm_counts) %in% bg_genes, ]
+        obj$norm_counts <- log2(obj$norm_counts + 1)
+        if (useTrainMeans){
+                print("Quantile normalizing with training set gene means.")
+                if (length(trainGenes_notInDat) != 0){
+                        warning(sprintf("%s genes of our training data (%s %%) are not in the counts matrix. The top %s quantiles of the training data won't be considered.",
+                                        length(trainGenes_notInDat),
+                                        round(length(trainGenes_notInDat)/length(bg_genes) * 100, digits = 3),
+                                        length(trainGenes_notInDat)))
+                        print("Training genes not in counts data:")
+                        print(trainGenes_notInDat)
+                }
+                train_means <- read.csv(train_means_file, row.names = 1)
+                obj$norm_counts <- quantNorm(obj$norm_counts,
+                                             train_means = train_means)
+        }else{
+                print("Quantile normalizing with computed gene means.")
+                obj$norm_counts <- quantNorm(obj$norm_counts)
+        }
+        obj$default_slot <- "norm_counts"
+        return(obj)
+}
+
+# Changes the default_slot that will be used by predictAge.
+default_slot <- function(obj, ...){
+        obj$default_slot
+}
+
+`default_slot<-` <- function(obj, value) {
+        UseMethod("default_slot<-")
+}
+
+`default_slot<-.brainAgeShiftObj` <- function(obj, value) {
+        if (!value %in% c("counts", "norm_counts")) {
+                stop("default_slot must be either counts or norm_counts")
+        }
+        obj$default_slot <- value
+        obj  # Return the modified object
+}
+
+# Uses norm_counts of brainAgeShiftObj to predict age with the brain clock.
+# Stores result as a new column in the metadata dataframe within the
+# brainAgeShiftObj.
+predictAge <- function(obj, ...){
+        UseMethod("predictAge")
+}
+
+predictAge.brainAgeShiftObj <- function(obj){
+        #obj <- brainAgeShiftObj
+        print(sprintf("Predicting ages on %s slot...",
+                      obj$default_slot))
+        normed4Pred <- obj[[obj$default_slot]]
+        mod_coef <- mod_coef[mod_coef$coefficients != 0, ]
+        mod_genes <- mod_coef$names
+        mod_genes <- mod_genes[mod_genes != "Intercept"]
+        normed4Pred <- normed4Pred[match(mod_genes, rownames(normed4Pred)), ]
+        if (!all(mod_genes %in% rownames(normed4Pred))){
+                missGenes <- mod_genes[!mod_genes %in% rownames(normed4Pred)]
+                warning(sprintf("%s genes in the model don't appear in the input data. Their values will be imputed to zero. The missing genes are:",
+                                length(missGenes)))
+                print(missGenes)
+                normed4Pred[is.na(rownames(normed4Pred)), ] <- 0
+                rownames(normed4Pred)[is.na(rownames(normed4Pred))] <- missGenes
+        }
+        # Helper function for predicting the ages using the coefficient vector.
+        # Only usable within this scope, as predictAge orders expVec according
+        # to
+        pred <- function(expVec, coefVec){
+                predAge <- sum(expVec * coefVec[2:length(coefVec)]) + coefVec[1]
+                return(predAge)
+        }
+        predVec <- apply(normed4Pred, 2, pred, coefVec = mod_coef$coefficients)
+        obj$metadata$predicted_age <- predVec
+        print("Done!")
+        return(obj)
+}
+
+# Compute significance between the samples belonging to the requested
+# comparisons.
+do_signTest <- function(obj, ...){
+        UseMethod("do_signTest")
+}
+
+do_signTest.brainAgeShiftObj <- function(obj, adjust_method = "BH"){
+        #obj <- brainAgeShiftObj
+        #adjust_method <- "BH"
+        if (is.null(obj$metadata)){
+                stop("The object introduced doen't have a metadata slot.",
+                     call. = F)
+        }
+        stats_df <- data.frame(matrix(nrow = 0,
+                                      ncol = 4,
+                                      dimnames = list(NULL,
+                                                      c("comparison",
+                                                        "p_value",
+                                                        "log2FC",
+                                                        "difference"))))
+        for (i in seq_along(obj$comparisons)){
+                c_1 <- obj$comparisons[[i]][1]
+                c_2 <- obj$comparisons[[i]][2]
+                comp_name <- sprintf("%s_vs_%s",
+                                     c_2, c_1)
+                c_1_vec <- obj$metadata$predicted_age[obj$metadata[, obj$variable] == c_1]
+                c_2_vec <- obj$metadata$predicted_age[obj$metadata[, obj$variable] == c_2]
+                p_val <- t.test(c_1_vec, c_2_vec)$p.value
+                log2FC <- log2(mean(c_2_vec)/mean(c_1_vec))
+                diff <- mean(c_2_vec) - mean(c_1_vec)
+                toBind <- data.frame(comparison = comp_name,
+                                     p_value = p_val,
+                                     log2FC = log2FC,
+                                     difference = diff)
+                stats_df <- rbind.data.frame(stats_df, toBind)
+        }
+        stats_df$p_adj <- p.adjust(stats_df$p_value, method = adjust_method)
+        obj$stats <- stats_df
+        return(obj)
+}
+
+# Given a brainAgeShift object which has metadata slot with computed
+# predicted ages, and a comparison (in the format of C2_vs_C1), returns a
+# dataframe with geneIDs of the genes the clock uses, mean differences
+# (C2 - C1), coefficients and weighted differences (difference * coefficient).
+# This function is a helper function for do_permTest.
+getWeightDiffDF <- function(obj, comp){
+        c_2 <- gsub("\\_vs_.*", "", comp)
+        c_1 <- gsub(".*_vs_", "", comp)
+        c_2_samps <- rownames(obj$metadata)[obj$metadata[, variable] == c_2]
+        c_1_samps <- rownames(obj$metadata)[obj$metadata[, variable] == c_1]
+        c_2_samps_idxs <- which(colnames(obj$norm_counts) %in% c_2_samps)
+        c_1_samps_idxs <- which(colnames(obj$norm_counts) %in% c_1_samps)
+        diffs <- apply(obj$norm_counts,
+                       1,
+                       function(x) mean(x[c_2_samps_idxs]) - mean(x[c_1_samps_idxs]))
+        diffs <- diffs[names(diffs) %in% mod_coef$names]
+        diffs_df <- data.frame(geneID = names(diffs),
+                               difference = diffs,
+                               coefficient = mod_coef$coefficients[match(names(diffs),
+                                                                         mod_coef$names)])
+        diffs_df$weighted_diff <- diffs_df$difference * diffs_df$coefficient
+        return(diffs_df)
+}
+
+# Given a brainAgeShift object which has metadata slot with computed
+# predicted ages, a comparison (in the format of C2_vs_C1), the number of
+# permutations and the p_adjust method, returns a dataframe with geneIDs of the
+# genes the clock uses, mean differences (C2 - C1), coefficients, weighted
+# differences (difference * coefficient), and p_value and p_adj columns, which
+# are computed with a permutation test, obtaining a null distribution by
+# randomly permuting the labels of the comparison. This function is a helper
+# function for get_signGenes.
+do_permTest <- function(obj, comp, n_perms, adjust_method = "BH"){
+        real_weight_df <- getWeightDiffDF(obj, comp)
+        perms_df <- data.frame(matrix(ncol = 0, nrow = nrow(real_weight_df),
+                                      dimnames = list(rownames(real_weight_df),
+                                                      NULL)))
+        pb <- txtProgressBar(min = 0, max = n_perms, style = 3)
+        for(i in 1:n_perms){
+                obj_perm <- obj
+                obj_perm$metadata[, obj_perm$variable] <- sample(obj$metadata[, obj$variable],
+                                                                 size = nrow(obj$metadata),
+                                                                 replace = F)
+                perm_weight_df <- getWeightDiffDF(obj_perm, comp)
+                toBind <- data.frame(matrix(perm_weight_df$weighted_diff,
+                                            ncol = 1,
+                                            dimnames = list(rownames(perm_weight_df),
+                                                            sprintf("perm_%s", i))))
+                perms_df <- cbind.data.frame(perms_df, toBind)
+                setTxtProgressBar(pb, i)
+        }
+        close(pb)
+        pVals <- rowSums(perms_df >= abs(real_weight_df$weighted_diff)) / n_perms
+        real_weight_df$p_value <- pVals
+        real_weight_df$p_adj <- p.adjust(pVals, method = adjust_method)
+        return(real_weight_df)
+}
+
+# Given a brainAgeShift object which has metadata slot with computed predicted
+# ages and a stats slot, computes the level of significance of the contribution
+# each gene in the brain clock had towards the observed shift in predicted age
+# for each comparison that was significantly shifted in age.
+# alpha_comparisons is the level of significance for the comparison.
+# alpha_genes is the level of significance for the genes.
+# n_perms is the number of permutations for obtaining the null distribution
+# adjust_method is the method for adjusting the p_value.
+# sort_genes is a logical that indicates if significant genes should be sorted
+# according to the magitude of their countribution (weighted difference). If the
+# mean predicted age difference of the comparison is positive they would be
+# sorted in a decreasing manner, and if it's negative the other way around.
+get_signGenes <- function(obj, ...){
+        UseMethod("get_signGenes")
+}
+
+get_signGenes.brainAgeShiftObj <- function(obj,
+                                           alpha_comparisons = 0.05,
+                                           alpha_genes = 0.05,
+                                           n_perms = 1000,
+                                           adjust_method = "BH",
+                                           sort_genes = T){
+        #obj <- brainAgeShiftObj
+
+        mod_coef <- mod_coef[mod_coef$coefficients != 0, ]
+        if(is.null(obj$stats)){
+                stop("The object introduced doen't have a stats slot.",
+                     call. = F)
+        }
+        sign_comps <- obj$stats[obj$stats$p_adj <= alpha_comparisons, ]
+        signGenesList <- list()
+        for (i in seq_along(sign_comps$comparison)){
+                comp <- sign_comps$comparison[i]
+                print(sprintf("Obtaining significant genes for %s comparison...",
+                              gsub("_", " ", comp)))
+                signGenesDF <- do_permTest(obj, comp, n_perms, adjust_method)
+                signGenesDF <- signGenesDF[signGenesDF$p_adj <= alpha_genes, ]
+                if(sort_genes){
+                        if(obj$stats$difference[obj$stats$comparison == comp] > 0){
+                                signGenesDF <- signGenesDF[order(signGenesDF$weighted_diff,
+                                                                 decreasing = T), ]
+                        }else{
+                                signGenesDF <- signGenesDF[order(signGenesDF$weighted_diff,
+                                                                 decreasing = F), ]
+                        }
+                }
+                signGenesList[[comp]] <- signGenesDF
+        }
+        obj$sign_genes <- signGenesList
+        return (obj)
+}
