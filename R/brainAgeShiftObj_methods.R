@@ -9,7 +9,7 @@
 #'
 #' @param obj A brainAgeShift object.
 #'
-#' @example default_slot(obj) = "norm_counts"
+#' @example examples/default_slot_example.R
 #'
 #' @export
 default_slot <- function(obj, ...){
