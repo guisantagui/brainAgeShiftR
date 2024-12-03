@@ -219,6 +219,7 @@ predictAge.brainAgeShiftObj <- function(obj){
         }
         predVec <- apply(normed4Pred, 2, pred, coefVec = mod_coef$coefficients)
         obj$metadata$predicted_age <- predVec
+        obj$used_for_preds <- obj$default_slot
         print("Done!")
         return(obj)
 }
@@ -286,11 +287,11 @@ do_signTest.brainAgeShiftObj <- function(obj, adjust_method = "BH"){
 getWeightDiffDF <- function(obj, comp){
         c_2 <- gsub("\\_vs_.*", "", comp)
         c_1 <- gsub(".*_vs_", "", comp)
-        c_2_samps <- rownames(obj$metadata)[obj$metadata[, variable] == c_2]
-        c_1_samps <- rownames(obj$metadata)[obj$metadata[, variable] == c_1]
-        c_2_samps_idxs <- which(colnames(obj$norm_counts) %in% c_2_samps)
-        c_1_samps_idxs <- which(colnames(obj$norm_counts) %in% c_1_samps)
-        diffs <- apply(obj$norm_counts,
+        c_2_samps <- rownames(obj$metadata)[obj$metadata[, obj$variable] == c_2]
+        c_1_samps <- rownames(obj$metadata)[obj$metadata[, obj$variable] == c_1]
+        c_2_samps_idxs <- which(colnames(obj[[obj$used_for_preds]]) %in% c_2_samps)
+        c_1_samps_idxs <- which(colnames(obj[[obj$used_for_preds]]) %in% c_1_samps)
+        diffs <- apply(obj[[obj$used_for_preds]],
                        1,
                        function(x) mean(x[c_2_samps_idxs]) - mean(x[c_1_samps_idxs]))
         diffs <- diffs[names(diffs) %in% mod_coef$names]

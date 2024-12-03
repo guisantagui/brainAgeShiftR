@@ -95,6 +95,7 @@ create_brainAgeShiftObj <- function(counts,
                     stats = NULL,
                     sign_genes = NULL)
         obj$default_slot <- "counts"
+        obj$used_for_preds <- NULL
         class(obj) <- "brainAgeShiftObj"
         return(obj)
 }
