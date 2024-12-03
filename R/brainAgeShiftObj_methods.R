@@ -143,7 +143,7 @@ do_frozenSVA.brainAgeShiftObj <- function(obj){
                 stop(sprintf("Frozen SVA needs to be applied on norm_counts, and this slot is not available. Run normalizeCounts() on your object before."),
                      call. = F)
         }
-        sva_mod_genes <- rownames(sva_mod$coefficients)
+        sva_mod_genes <- rownames(sva_mod_coefs)
         sva_mod_genes <- sva_mod_genes[sva_mod_genes != "(Intercept)"]
         sva_mod_genes_notInDat <- sva_mod_genes[!sva_mod_genes %in% rownames(obj$norm_counts)]
         if(length(sva_mod_genes_notInDat) > 0){
@@ -153,8 +153,15 @@ do_frozenSVA.brainAgeShiftObj <- function(obj){
         }
         predMat <- data.frame(t(obj$norm_counts[match(sva_mod_genes,
                                                       rownames(obj$norm_counts)), ]))
-
-        pred_SVs <- predict(sva_mod, predMat)
+        pred <- function(expVec, coefVec){
+                predSV <- sum(expVec * coefVec[2:length(coefVec)]) + coefVec[1]
+                return(predSV)
+        }
+        pred_SVs <- apply(sva_mod_coefs,
+                          2,
+                          function(y) apply(predMat,
+                                            1,
+                                            function(x) pred(x, y)))
         b <- matrix(nrow = 0, ncol = ncol(pred_SVs),
                     dimnames = list(NULL, colnames(pred_SVs)))
         for(i in seq_along(colnames(predMat))){
