@@ -101,7 +101,7 @@ normalizeCounts.brainAgeShiftObj <- function(obj, useTrainMeans = F){
                         print("Training genes not in counts data:")
                         print(trainGenes_notInDat)
                 }
-                train_means <- .brainAgeShiftR_env$train_quant_means
+                train_means <- .brainAgeShiftR_env$train_quant_means[, 1]
                 obj$norm_counts <- quantNorm(obj$norm_counts,
                                              train_means = train_means)
         }else{
