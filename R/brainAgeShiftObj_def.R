@@ -24,10 +24,16 @@
 #' and subsequent statistical analyses to detect transcriptomic age-shifting
 #' factors.
 #'
-#' @param counts A matrix of gene counts. Genes in rows, samples in columns. Row names must be ENSEMBL IDs
-#' @param metadata A data.frame with at least the variable of interest for comparing transcriptomic ages. Row names must match column names of counts matrix.
-#' @param variable The column in the metadata dataframe where the comparisons are stored.
-#' @param comparisons Either a vector of two factors, or a list of multiple two-factor vectors. First item in each comparison will be initial or base state during the difference computation, second the final or altered state.
+#' @param counts A matrix of gene counts. Genes in rows, samples in columns. Row
+#'  names must be ENSEMBL IDs
+#' @param metadata A data.frame with at least the variable of interest for
+#' comparing transcriptomic ages. Row names must match column names of counts
+#' matrix.
+#' @param variable The column in the metadata dataframe where the comparisons
+#' are stored.
+#' @param comparisons Either a vector of two factors, or a list of multiple
+#' two-factor vectors. First item in each comparison will be initial or base
+#' state during the difference computation, second the final or altered state.
 #'
 #' @return A new brainAgeShift object initialized with the required slots and default values.
 #' @export
