@@ -1,3 +1,8 @@
 .Rproj.user
 .DS_Store
-inst/
+inst/brain_clock
+inst/geneNormMeans.csv
+inst/mod_coefs.csv
+inst/quant_norm_train_means.csv
+inst/rank_freq.csv
+inst/sva_pred_mod.rds
