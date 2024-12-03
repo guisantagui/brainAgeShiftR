@@ -30,10 +30,6 @@ default_slot <- function(obj, ...){
 
 # Performs quantile normalization
 quantNorm <- function(m, axis = 2, train_means = NULL) {
-        axis <- 2
-        #m <- counts
-        train_means <- NULL
-
         if (axis == 1) {
                 m <- t(m)
         }
@@ -49,7 +45,6 @@ quantNorm <- function(m, axis = 2, train_means = NULL) {
         }else{
                 means <- rowMeans(m_sort)
         }
-
 
         # Create a normalized matrix with the same dimensions
         m_norm <- matrix(0, nrow = nrow(m), ncol = ncol(m))
@@ -201,7 +196,6 @@ predictAge <- function(obj, ...){
 }
 
 predictAge.brainAgeShiftObj <- function(obj){
-        #obj <- brainAgeShiftObj
         print(sprintf("Predicting ages on %s slot...",
                       obj$default_slot))
         normed4Pred <- obj[[obj$default_slot]]
@@ -253,8 +247,6 @@ do_signTest <- function(obj, ...){
 }
 
 do_signTest.brainAgeShiftObj <- function(obj, adjust_method = "BH"){
-        #obj <- brainAgeShiftObj
-        #adjust_method <- "BH"
         if (is.null(obj$metadata)){
                 stop("The object introduced doen't have a metadata slot.",
                      call. = F)
@@ -394,8 +386,7 @@ get_signGenes.brainAgeShiftObj <- function(obj,
                                            n_perms = 1000,
                                            adjust_method = "BH",
                                            sort_genes = T){
-        #obj <- brainAgeShiftObj
-
+        mod_coef <- .brainAgeShiftR_env$mod_coef
         mod_coef <- mod_coef[mod_coef$coefficients != 0, ]
         if(is.null(obj$stats)){
                 stop("The object introduced doen't have a stats slot.",
