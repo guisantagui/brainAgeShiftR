@@ -91,8 +91,7 @@ normalizeCounts <- function(obj, ...){
 }
 
 normalizeCounts.brainAgeShiftObj <- function(obj, useTrainMeans = F){
-        #obj <- brainAgeShiftObj
-        bg_genes <- read.csv(bg_file, row.names = 1)$geneID
+        bg_genes <- .brainAgeShiftR_env$bg_genes
         obj$norm_counts <- obj$counts
         trainGenes_notInDat <- bg_genes[!bg_genes %in% rownames(obj$counts)]
         obj$norm_counts <- obj$norm_counts[rownames(obj$norm_counts) %in% bg_genes, ]
@@ -107,7 +106,7 @@ normalizeCounts.brainAgeShiftObj <- function(obj, useTrainMeans = F){
                         print("Training genes not in counts data:")
                         print(trainGenes_notInDat)
                 }
-                train_means <- read.csv(train_means_file, row.names = 1)
+                train_means <- .brainAgeShiftR_env$train_quant_means
                 obj$norm_counts <- quantNorm(obj$norm_counts,
                                              train_means = train_means)
         }else{
@@ -143,6 +142,7 @@ do_frozenSVA.brainAgeShiftObj <- function(obj){
                 stop(sprintf("Frozen SVA needs to be applied on norm_counts, and this slot is not available. Run normalizeCounts() on your object before."),
                      call. = F)
         }
+        sva_mod_coefs <- .brainAgeShiftR_env$sva_mod_coefs
         sva_mod_genes <- rownames(sva_mod_coefs)
         sva_mod_genes <- sva_mod_genes[sva_mod_genes != "(Intercept)"]
         sva_mod_genes_notInDat <- sva_mod_genes[!sva_mod_genes %in% rownames(obj$norm_counts)]
@@ -205,6 +205,7 @@ predictAge.brainAgeShiftObj <- function(obj){
         print(sprintf("Predicting ages on %s slot...",
                       obj$default_slot))
         normed4Pred <- obj[[obj$default_slot]]
+        mod_coef <- .brainAgeShiftR_env$mod_coef
         mod_coef <- mod_coef[mod_coef$coefficients != 0, ]
         mod_genes <- mod_coef$names
         mod_genes <- mod_genes[mod_genes != "Intercept"]
