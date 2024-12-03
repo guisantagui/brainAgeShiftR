@@ -22,6 +22,7 @@ default_slot <- function(obj, ...){
 }
 
 #' @method default_slot<- brainAgeShiftObj
+#' @export
 `default_slot<-.brainAgeShiftObj` <- function(obj, value) {
         if (!value %in% c("counts", "norm_counts")) {
                 stop("default_slot must be either counts or norm_counts")
@@ -88,6 +89,7 @@ normalizeCounts <- function(obj, ...){
 }
 
 #' @method normalizeCounts brainAgeShiftObj
+#' @export
 normalizeCounts.brainAgeShiftObj <- function(obj, useTrainMeans = F){
         bg_genes <- .brainAgeShiftR_env$bg_genes
         obj$norm_counts <- obj$counts
@@ -136,6 +138,7 @@ do_frozenSVA <- function(obj, ...){
 }
 
 #' @method doFrozenSVA brainAgeShiftObj
+#' @export
 do_frozenSVA.brainAgeShiftObj <- function(obj){
         if(is.null(obj$norm_counts)){
                 stop(sprintf("Frozen SVA needs to be applied on norm_counts, and this slot is not available. Run normalizeCounts() on your object before."),
@@ -200,6 +203,7 @@ predictAge <- function(obj, ...){
 }
 
 #' @method predictAge brainAgeShiftObj
+#' @export
 predictAge.brainAgeShiftObj <- function(obj){
         print(sprintf("Predicting ages on %s slot...",
                       obj$default_slot))
@@ -252,6 +256,7 @@ do_signTest <- function(obj, ...){
 }
 
 #' @method do_signTest brainAgeShiftObj
+#' @export
 do_signTest.brainAgeShiftObj <- function(obj, adjust_method = "BH"){
         if (is.null(obj$metadata)){
                 stop("The object introduced doen't have a metadata slot.",
@@ -387,6 +392,7 @@ get_signGenes <- function(obj, ...){
 }
 
 #' @method get_signGenes brainAgeShiftObj
+#' @export
 get_signGenes.brainAgeShiftObj <- function(obj,
                                            alpha_comparisons = 0.05,
                                            alpha_genes = 0.05,
