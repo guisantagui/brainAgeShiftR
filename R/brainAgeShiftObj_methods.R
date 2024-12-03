@@ -24,8 +24,8 @@ default_slot <- function(obj, ...){
 #' @method default_slot<- brainAgeShiftObj
 #' @export
 `default_slot<-.brainAgeShiftObj` <- function(obj, value) {
-        if (!value %in% c("counts", "norm_counts")) {
-                stop("default_slot must be either counts or norm_counts")
+        if (!value %in% c("counts", "norm_counts", "frozen_SVAed")) {
+                stop("default_slot must be either counts, norm_counts or frozen_SVAed")
         }
         obj$default_slot <- value
         obj  # Return the modified object
