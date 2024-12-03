@@ -7,6 +7,8 @@
 #' Changes the default_slot, which is the one that will be used by predictAge.
 #' to compute transcriptomic age.
 #'
+#' @param obj A brainAgeShift object.
+#'
 #' @example default_slot(obj) = "norm_counts"
 #'
 #' @export
@@ -76,9 +78,12 @@ quantNorm <- function(m, axis = 2, train_means = NULL) {
 #' this method.
 #'
 #' @param obj A brainAgeShift object.
-#' @param useTrainMeans Instead of computing the quantile means on the introduced data, uses the quantiles from our training data, to make distributions closer. Either TRUE or FALSE.
+#' @param useTrainMeans Instead of computing the quantile means on the
+#' introduced data, uses the quantiles from our training data, to make
+#' distributions closer. Either TRUE or FALSE.
 #'
-#' @return A brainAgeShift object with the norm_counts slot filled with the normalized counts matrix.
+#' @return A brainAgeShift object with the norm_counts slot filled with the
+#' normalized counts matrix.
 #'
 #' @export
 normalizeCounts <- function(obj, ...){
@@ -120,12 +125,13 @@ normalizeCounts.brainAgeShiftObj <- function(obj, useTrainMeans = F){
 #' Apply frozen SVA
 #'
 #' Apply frozen SVA on the norm_counts slot. Predicts SVs based on the ones
-#' computed in our training data, and regresses them out. Default slot is changed
-#' to frozen_SVAed after running this method.
+#' computed in our training data, and regresses them out. Default slot is
+#' changed to frozen_SVAed after running this method.
 #'
 #' @param obj A brainAgeShift object.
 #'
-#' @return A brainAgeShift object with the frozen_SVAed slot filled with the normalized counts matrix.
+#' @return A brainAgeShift object with the frozen_SVAed slot filled with the
+#' normalized counts matrix.
 #'
 #' @export
 do_frozenSVA <- function(obj, ...){
@@ -179,7 +185,8 @@ do_frozenSVA.brainAgeShiftObj <- function(obj){
 #'
 #' @param obj A brainAgeShift object.
 #'
-#' @return A brainAgeShift object with a predicted_age column added to the metadata slot dataframe.
+#' @return A brainAgeShift object with a predicted_age column added to the
+#' metadata slot dataframe.
 #'
 #' @export
 predictAge <- function(obj, ...){
@@ -220,7 +227,17 @@ predictAge.brainAgeShiftObj <- function(obj){
 # comparisons.
 
 #' Compute comparison significance.
-
+#'
+#' Compute p-value (t-test), adjusted p-value, log2 fold change and difference
+#' of each one of the specified comparisons.
+#'
+#' @param obj A brainAgeShift object with a not-empty metadata slot, a variable
+#' and at least one comparison.
+#' @param adjust_method The p-value adjustment method.
+#'
+#' @return A brainAgeShift object with the stats slot filled with a dataframe
+#' containing the results of the statistical analyses for each comparison.
+#'
 #' @export
 do_signTest <- function(obj, ...){
         UseMethod("do_signTest")
@@ -332,6 +349,31 @@ do_permTest <- function(obj, comp, n_perms, adjust_method = "BH"){
 # mean predicted age difference of the comparison is positive they would be
 # sorted in a decreasing manner, and if it's negative the other way around.
 
+#' Obtain genes significantly contributing to age shifts
+#'
+#' For each one of the significant comparisons, determine which are the genes
+#' that are significantly contributing to such shift. For that, the weighted
+#' mean difference between each group of each significant comparison is computed
+#' for each gene, and is compared to a null distribution obtained through random
+#' permutation of the group labels, obtaining a p-value for each gene, which
+#' is later adjusted.
+#'
+#' @param obj A brainAgeShift object with a not-empty stats slot.
+#' @param alpha_comparisons The level of significance of the comparisons.
+#' @param alpha_genes The level of significance of the genes.
+#' @param n_perms The number of permutations for running the permutation test.
+#' @param adjust_method The p-value adjustment method for the genes' p-values.
+#' @param sort_genes If genes should be sorted according to weighted
+#' differences in each one of the sign_genes dataframes. If true, if the log2FC
+#' of the comparison is positive genes will be sorted in a decreasing fashion,
+#' and the other way around.
+#'
+#' @return A brainAgeShift object with the sign_genes slot filled with a list
+#' where each item consists on a dataframe of the significant genes
+#' (p_adj <= alpha_genes) for each one of the significant comparisons
+#' (p_adj <= alpha_comparisons). This dataframe contains the following columns:
+#' geneID, difference, coefficient, weighted_diff, p_value and p_adj.
+#'
 #' @export
 get_signGenes <- function(obj, ...){
         UseMethod("get_signGenes")
