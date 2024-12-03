@@ -137,7 +137,7 @@ do_frozenSVA <- function(obj, ...){
         UseMethod("do_frozenSVA")
 }
 
-#' @method do_FrozenSVA brainAgeShiftObj
+#' @method do_frozenSVA brainAgeShiftObj
 #' @export
 do_frozenSVA.brainAgeShiftObj <- function(obj){
         if(is.null(obj$norm_counts)){
