@@ -35,7 +35,8 @@
 #' two-factor vectors. First item in each comparison will be initial or base
 #' state during the difference computation, second the final or altered state.
 #'
-#' @return A new brainAgeShift object initialized with the required slots and default values.
+#' @return A new brainAgeShift object initialized with the required slots and
+#' default values.
 #' @export
 create_brainAgeShiftObj <- function(counts,
                                     metadata = NULL,
