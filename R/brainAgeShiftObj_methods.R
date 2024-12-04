@@ -129,7 +129,7 @@ normalizeCounts.brainAgeShiftObj <- function(obj, useTrainMeans = F){
 
 #' Apply frozen SVA
 #'
-#' Applies frozen SVA on the `norm_counts` slot of a `brainAgeShift` object.\
+#' Applies frozen SVA on the `norm_counts` slot of a `brainAgeShift` object.
 #' Predicts SVs based on the ones computed in our training data, and regresses
 #' them out. Default slot is changed to `frozen_SVAed` after running this
 #' method.
@@ -293,7 +293,7 @@ do_signTest <- function(obj, ...){
 #' @method do_signTest brainAgeShiftObj
 #' @export
 do_signTest.brainAgeShiftObj <- function(obj, adjust_method = "BH"){
-        if (is.null(obj$metadata) | any(colnames(obj$metadata) != "predicted_age")){
+        if (is.null(obj$metadata) | !any(colnames(obj$metadata) != "predicted_age")){
                 stop("The object introduced doesn't have a proper metadata slot.",
                      call. = F)
         }
