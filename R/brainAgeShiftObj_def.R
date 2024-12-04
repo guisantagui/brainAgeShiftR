@@ -57,33 +57,37 @@ create_brainAgeShiftObj <- function(counts,
                         stop("Column names of counts and row mames of metadata differ.",
                              call. = F)
                 }
-                if (!variable %in% colnames(metadata)){
-                        stop("The introduced variable is not included in the metadata.",
-                             call. = F)
+                if (!is.null(variable)){
+                        if (!variable %in% colnames(metadata)){
+                                stop("The introduced variable is not included in the metadata.",
+                                     call. = F)
+                        }
                 }
-                if (!is.list(comparisons)){
-                        comparisons <- list(comparisons)
-                }
-                if (any(unlist(lapply(comparisons,
-                                      function(x) length(x) != 2)))){
-                        stop("Comparisons must be of length 2.",
-                             call. = F)
-                }
-                comps_uniq <- unique(unlist(comparisons))
-                if (any(!comps_uniq %in% metadata[, variable])){
-                        notInMetDat <- comps_uniq[!comps_uniq %in% metadata[, variable]]
-                        paste(notInMetDat, collapse = ", ")
-                        stop(sprintf("%s not included in the %s.",
-                                     notInMetDat,
-                                     variable),
-                             call. = F)
-                }
-                if(any(!metadata[, variable] %in% comps_uniq)){
-                        print(sprintf("Filtering out the samples that are not labeled as %s.",
-                                      paste(comps_uniq, collapse = ", ")))
-                        keep <- metadata[, variable] %in% comps_uniq
-                        metadata <- metadata[keep, ]
-                        counts <- counts[, keep]
+                if (!is.null(variable) & !is.null(comparisons)){
+                        if (!is.list(comparisons)){
+                                comparisons <- list(comparisons)
+                        }
+                        if (any(unlist(lapply(comparisons,
+                                              function(x) length(x) != 2)))){
+                                stop("Comparisons must be of length 2.",
+                                     call. = F)
+                        }
+                        comps_uniq <- unique(unlist(comparisons))
+                        if (any(!comps_uniq %in% metadata[, variable])){
+                                notInMetDat <- comps_uniq[!comps_uniq %in% metadata[, variable]]
+                                paste(notInMetDat, collapse = ", ")
+                                stop(sprintf("%s not included in the %s.",
+                                             notInMetDat,
+                                             variable),
+                                     call. = F)
+                        }
+                        if(any(!metadata[, variable] %in% comps_uniq)){
+                                print(sprintf("Filtering out the samples that are not labeled as %s.",
+                                              paste(comps_uniq, collapse = ", ")))
+                                keep <- metadata[, variable] %in% comps_uniq
+                                metadata <- metadata[keep, ]
+                                counts <- counts[, keep]
+                        }
                 }
         }else{
                 warning("No metadata, variable and comparison indicated. This object only will work for doing predictions with the clock.")
