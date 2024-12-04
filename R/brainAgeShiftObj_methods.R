@@ -296,6 +296,8 @@ do_signTest.brainAgeShiftObj <- function(obj, adjust_method = "BH"){
 # (C2 - C1), coefficients and weighted differences (difference * coefficient).
 # This function is a helper function for do_permTest.
 getWeightDiffDF <- function(obj, comp){
+        mod_coef <- .brainAgeShiftR_env$mod_coef
+        mod_coef <- mod_coef[mod_coef$coefficients != 0, ]
         c_2 <- gsub("\\_vs_.*", "", comp)
         c_1 <- gsub(".*_vs_", "", comp)
         c_2_samps <- rownames(obj$metadata)[obj$metadata[, obj$variable] == c_2]
