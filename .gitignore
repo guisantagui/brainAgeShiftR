@@ -1,4 +1,5 @@
 .Rproj.user
+.Rhistory
 .DS_Store
 inst/brain_clock
 inst/geneNormMeans.csv

@@ -7,7 +7,7 @@
 #' Changes the default_slot, which is the one that will be used by predictAge.
 #' to compute transcriptomic age.
 #'
-#' @param obj A brainAgeShift object.
+#' @param obj A `brainAgeShift` object.
 #'
 #' @example examples/default_slot_example.R
 #'
@@ -16,11 +16,13 @@ default_slot <- function(obj, ...){
         obj$default_slot
 }
 
+#' @rdname default_slot
 #' @export
 `default_slot<-` <- function(obj, value) {
         UseMethod("default_slot<-")
 }
 
+#' @rdname default_slot
 #' @method default_slot<- brainAgeShiftObj
 #' @export
 `default_slot<-.brainAgeShiftObj` <- function(obj, value) {
@@ -69,25 +71,29 @@ quantNorm <- function(m, axis = 2, train_means = NULL) {
 
 #' Normalize brainAgeShift counts
 #'
-#' Normalize the counts of the brainAgeShift object to make them suitable
-#' to predict ages with it. First it filters the genes to keep only training
-#' ones, then computes log2(counts + 1), and after applies quantile
-#' normalization. Default slot is changed to norm_counts after running
-#' this method.
+#' Normalizes the counts in a `brainAgeShift` object to prepare them for age
+#' prediction. The normalization process includes filtering genes to retain only
+#' those used in training, applying log2 transformation (`log2(counts + 1)`),
+#' and performing quantile normalization. After normalization, the
+#' `default_slot` of the object is updated to `"norm_counts"`.
 #'
-#' @param obj A brainAgeShift object.
-#' @param useTrainMeans Instead of computing the quantile means on the
-#' introduced data, uses the quantiles from our training data, to make
-#' distributions closer. Either TRUE or FALSE.
+#' @param obj A `brainAgeShift` object.
+#' @param useTrainMeans Logical. If `TRUE`, uses the quantile means from the
+#' training data for nomralization, ensuring distributions are closer to the
+#' training set. If `FALSE`, computes quantile means directly from the input
+#' data.
 #'
-#' @return A brainAgeShift object with the norm_counts slot filled with the
+#' @return A `brainAgeShift` object with the `norm_counts` slot filled with the
 #' normalized counts matrix.
+#'
+#' @example examples/normalizeCounts_example.R
 #'
 #' @export
 normalizeCounts <- function(obj, ...){
         UseMethod("normalizeCounts")
 }
 
+#' @rdname normalizeCounts
 #' @method normalizeCounts brainAgeShiftObj
 #' @export
 normalizeCounts.brainAgeShiftObj <- function(obj, useTrainMeans = F){
@@ -123,20 +129,22 @@ normalizeCounts.brainAgeShiftObj <- function(obj, useTrainMeans = F){
 
 #' Apply frozen SVA
 #'
-#' Apply frozen SVA on the norm_counts slot. Predicts SVs based on the ones
-#' computed in our training data, and regresses them out. Default slot is
-#' changed to frozen_SVAed after running this method.
+#' Applies frozen SVA on the `norm_counts` slot of a `brainAgeShift` object.\
+#' Predicts SVs based on the ones computed in our training data, and regresses
+#' them out. Default slot is changed to `frozen_SVAed` after running this
+#' method.
 #'
-#' @param obj A brainAgeShift object.
+#' @param obj A `brainAgeShift` object.
 #'
-#' @return A brainAgeShift object with the frozen_SVAed slot filled with the
-#' normalized counts matrix.
+#' @return A `brainAgeShift` object with the `frozen_SVAed` slot filled with the
+#' SVAed normalized counts matrix.
 #'
 #' @export
 do_frozenSVA <- function(obj, ...){
         UseMethod("do_frozenSVA")
 }
 
+#' @rdname do_frozenSVA
 #' @method do_frozenSVA brainAgeShiftObj
 #' @export
 do_frozenSVA.brainAgeShiftObj <- function(obj){
@@ -189,19 +197,24 @@ do_frozenSVA.brainAgeShiftObj <- function(obj){
 # brainAgeShiftObj.
 
 #' Predict ages
-#' Uses the brain transcriptomic clock to predict transcriptomic ages, based on
-#' the default slot ("counts", "norm_counts", "frozen_SVAed")..
 #'
-#' @param obj A brainAgeShift object.
+#' Predicts transcriptomic ages using the brain transcriptomic clock. The method
+#' operates based on the default slot, which must be one of `counts`,
+#' `norm_counts` or `frozen_SVAed`.
 #'
-#' @return A brainAgeShift object with a predicted_age column added to the
-#' metadata slot dataframe.
+#' @param obj A `brainAgeShift` object.
+#'
+#' @return A `brainAgeShift` object with a `predicted_age` column added to the
+#' metadata slot's dataframe.
+#'
+#' @example examples/predictAge_example.R
 #'
 #' @export
 predictAge <- function(obj, ...){
         UseMethod("predictAge")
 }
 
+#' @rdname predictAge
 #' @method predictAge brainAgeShiftObj
 #' @export
 predictAge.brainAgeShiftObj <- function(obj){
@@ -235,26 +248,41 @@ predictAge.brainAgeShiftObj <- function(obj){
         return(obj)
 }
 
-# Compute significance between the samples belonging to the requested
-# comparisons.
+# Compute statistical significance for predicted age comparisons
 
-#' Compute comparison significance.
+
+#' Compute statistical significance for predicted age comparisons
 #'
-#' Compute p-value (t-test), adjusted p-value, log2 fold change and difference
-#' of each one of the specified comparisons.
+#' Performs statistical analysis of the transcriptomic ages on the specified
+#' comparisons within the metadata slot of a `brainAgeShift` object. The
+#' function computes the p-value (t-test), adjusted p-value, log2 fold change
+#' and difference for each requested comparison.
 #'
-#' @param obj A brainAgeShift object with a not-empty metadata slot, a variable
-#' and at least one comparison.
-#' @param adjust_method The p-value adjustment method.
+#' @param obj A `brainAgeShift` object with a non-empty `metadata`, `variable`
+#' and `comparisons` slots.
 #'
-#' @return A brainAgeShift object with the stats slot filled with a dataframe
-#' containing the results of the statistical analyses for each comparison.
+#' @param adjust_method A character string specifying the the p-value adjustment
+#' method. This is passed to `p.adjust`, such as `"BH"` (Benjamini-Hochberg) or
+#' `"bonferroni"`. Default is `"BH"`.
+#'
+#' @return A `brainAgeShift` object with the `stats` slot updated with a
+#' dataframe containing the following columns:
+#' \itemize{
+#'      \item \strong{comparison}: The name of the comparison.
+#'      \item \strong{p-value}: The p-value from the t-test
+#'      \item \strong{log2FC}: log2 fold change.
+#'      \item \strong{difference}: The raw difference between group means.
+#'      \item \strong{p_adj}: The adjusted p-value.
+#' }
+#'
+#' @example examples/do_signTest_example.R
 #'
 #' @export
 do_signTest <- function(obj, ...){
         UseMethod("do_signTest")
 }
 
+#' @rdname do_signTest
 #' @method do_signTest brainAgeShiftObj
 #' @export
 do_signTest.brainAgeShiftObj <- function(obj, adjust_method = "BH"){
@@ -363,36 +391,52 @@ do_permTest <- function(obj, comp, n_perms, adjust_method = "BH"){
 # mean predicted age difference of the comparison is positive they would be
 # sorted in a decreasing manner, and if it's negative the other way around.
 
-#' Obtain genes significantly contributing to age shifts
+#' Identify genes significantly contributing to age shifts
 #'
-#' For each one of the significant comparisons, determine which are the genes
-#' that are significantly contributing to such shift. For that, the weighted
-#' mean difference between each group of each significant comparison is computed
-#' for each gene, and is compared to a null distribution obtained through random
-#' permutation of the group labels, obtaining a p-value for each gene, which
-#' is later adjusted.
+#' For each significant comparison in the `stats` slot of a `brainAgeShift`
+#' object, this function identifies the genes that significantly contribute to
+#' observed shifts. The weighted mean difference between comparison groups is
+#' calculated for each gene and compared against a null distribution generated
+#' through random permutations of group labels. P-values are obtained for each
+#' gene and adjusted for multiple comparisons.
 #'
-#' @param obj A brainAgeShift object with a not-empty stats slot.
-#' @param alpha_comparisons The level of significance of the comparisons.
-#' @param alpha_genes The level of significance of the genes.
-#' @param n_perms The number of permutations for running the permutation test.
-#' @param adjust_method The p-value adjustment method for the genes' p-values.
-#' @param sort_genes If genes should be sorted according to weighted
-#' differences in each one of the sign_genes dataframes. If true, if the log2FC
-#' of the comparison is positive genes will be sorted in a decreasing fashion,
-#' and the other way around.
+#' @param obj A `brainAgeShift` object with a non-empty `stats` slot.
+#' @param alpha_comparisons Numeric. The significance threshold for selecting
+#' significant comparisons (adjusted p-value <= `alpha_comparisons`). Defaults
+#' to `0.05`.
+#' @param alpha_genes Numeric. The significance threshold for selecting
+#' significant genes (adjusted p-value <= `alpha_genes`). Defaults to `0.05`.
+#' @param n_perms Integer. The number of permutations to perform for the
+#' permutation test. Defaults to `1000`.
+#' @param adjust_method Character. The p-value adjustment method to use for
+#' genes' p-values (e.g. `"BH"` for Benjamini-Hochberg or `"bonferroni"`).
+#' Defaults to `"BH"`.
+#' @param sort_genes Logical. If `TRUE`, genes in each `sign_genes` dataframe
+#' will be sorted by weighted differences. Sorting is performed such that
+#' positive log2 fold change in the comparison implies decreasing order of
+#' genes' weighted differences, and viceversa. Defaults to `TRUE`.
 #'
-#' @return A brainAgeShift object with the sign_genes slot filled with a list
-#' where each item consists on a dataframe of the significant genes
-#' (p_adj <= alpha_genes) for each one of the significant comparisons
-#' (p_adj <= alpha_comparisons). This dataframe contains the following columns:
-#' geneID, difference, coefficient, weighted_diff, p_value and p_adj.
+#' @return A `brainAgeShift` object with the `sign_genes` slot updated. The
+#' `sign_genes` slot contains a list where each element corresponds to a
+#' significant comparison and is a dataframe of significant genes. The
+#' dataframes include the following columns:
+#' \itemize{
+#'      \item \strong{geneID}: the ENSEMBL ID of the gene.
+#'      \item \strong{difference}: the raw mean difference between groups.
+#'      \item \strong{coefficient}: the brain clock coefficient.
+#'      \item \strong{weighted_diff}: the weighted mean difference
+#'      \item \strong{p_value}: the p-value from the permutation test.
+#'      \item \strong{p_adj}: the adjusted p-value.
+#' }
+#'
+#' @example examples/get_signGenes_example.R
 #'
 #' @export
 get_signGenes <- function(obj, ...){
         UseMethod("get_signGenes")
 }
 
+#' @rdname get_signGenes
 #' @method get_signGenes brainAgeShiftObj
 #' @export
 get_signGenes.brainAgeShiftObj <- function(obj,

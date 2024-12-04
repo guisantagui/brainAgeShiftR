@@ -2,19 +2,23 @@
 % Please edit documentation in R/brainAgeShiftObj_methods.R
 \name{do_frozenSVA}
 \alias{do_frozenSVA}
+\alias{do_frozenSVA.brainAgeShiftObj}
 \title{Apply frozen SVA}
 \usage{
 do_frozenSVA(obj, ...)
+
+\method{do_frozenSVA}{brainAgeShiftObj}(obj)
 }
 \arguments{
-\item{obj}{A brainAgeShift object.}
+\item{obj}{A \code{brainAgeShift} object.}
 }
 \value{
-A brainAgeShift object with the frozen_SVAed slot filled with the
-normalized counts matrix.
+A \code{brainAgeShift} object with the \code{frozen_SVAed} slot filled with the
+SVAed normalized counts matrix.
 }
 \description{
-Apply frozen SVA on the norm_counts slot. Predicts SVs based on the ones
-computed in our training data, and regresses them out. Default slot is
-changed to frozen_SVAed after running this method.
+Applies frozen SVA on the \code{norm_counts} slot of a \code{brainAgeShift} object.\
+Predicts SVs based on the ones computed in our training data, and regresses
+them out. Default slot is changed to \code{frozen_SVAed} after running this
+method.
 }

@@ -2,21 +2,25 @@
 % Please edit documentation in R/brainAgeShiftObj_methods.R
 \name{predictAge}
 \alias{predictAge}
-\title{Predict ages
-Uses the brain transcriptomic clock to predict transcriptomic ages, based on
-the default slot ("counts", "norm_counts", "frozen_SVAed")..}
+\alias{predictAge.brainAgeShiftObj}
+\title{Predict ages}
 \usage{
 predictAge(obj, ...)
+
+\method{predictAge}{brainAgeShiftObj}(obj)
 }
 \arguments{
-\item{obj}{A brainAgeShift object.}
+\item{obj}{A \code{brainAgeShift} object.}
 }
 \value{
-A brainAgeShift object with a predicted_age column added to the
-metadata slot dataframe.
+A \code{brainAgeShift} object with a \code{predicted_age} column added to the
+metadata slot's dataframe.
 }
 \description{
-Predict ages
-Uses the brain transcriptomic clock to predict transcriptomic ages, based on
-the default slot ("counts", "norm_counts", "frozen_SVAed")..
+Predicts transcriptomic ages using the brain transcriptomic clock. The method
+operates based on the default slot, which must be one of \code{counts},
+\code{norm_counts} or \code{frozen_SVAed}.
+}
+\examples{
+obj <- predictAge(obj)
 }

@@ -2,25 +2,36 @@
 % Please edit documentation in R/brainAgeShiftObj_methods.R
 \name{normalizeCounts}
 \alias{normalizeCounts}
+\alias{normalizeCounts.brainAgeShiftObj}
 \title{Normalize brainAgeShift counts}
 \usage{
 normalizeCounts(obj, ...)
+
+\method{normalizeCounts}{brainAgeShiftObj}(obj, useTrainMeans = F)
 }
 \arguments{
-\item{obj}{A brainAgeShift object.}
+\item{obj}{A \code{brainAgeShift} object.}
 
-\item{useTrainMeans}{Instead of computing the quantile means on the
-introduced data, uses the quantiles from our training data, to make
-distributions closer. Either TRUE or FALSE.}
+\item{useTrainMeans}{Logical. If \code{TRUE}, uses the quantile means from the
+training data for nomralization, ensuring distributions are closer to the
+training set. If \code{FALSE}, computes quantile means directly from the input
+data.}
 }
 \value{
-A brainAgeShift object with the norm_counts slot filled with the
+A \code{brainAgeShift} object with the \code{norm_counts} slot filled with the
 normalized counts matrix.
 }
 \description{
-Normalize the counts of the brainAgeShift object to make them suitable
-to predict ages with it. First it filters the genes to keep only training
-ones, then computes log2(counts + 1), and after applies quantile
-normalization. Default slot is changed to norm_counts after running
-this method.
+Normalizes the counts in a \code{brainAgeShift} object to prepare them for age
+prediction. The normalization process includes filtering genes to retain only
+those used in training, applying log2 transformation (\code{log2(counts + 1)}),
+and performing quantile normalization. After normalization, the
+\code{default_slot} of the object is updated to \code{"norm_counts"}.
+}
+\examples{
+# Normalize counts using computed quantile means
+obj <- normalizeCounts(obj, useTrainMeans = FALSE)
+
+# Normalize counts using training quantile means
+obj <- normalizeCounts(obj, useTrainMeans = TRUE)
 }

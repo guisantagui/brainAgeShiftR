@@ -2,38 +2,70 @@
 % Please edit documentation in R/brainAgeShiftObj_methods.R
 \name{get_signGenes}
 \alias{get_signGenes}
-\title{Obtain genes significantly contributing to age shifts}
+\alias{get_signGenes.brainAgeShiftObj}
+\title{Identify genes significantly contributing to age shifts}
 \usage{
 get_signGenes(obj, ...)
+
+\method{get_signGenes}{brainAgeShiftObj}(
+  obj,
+  alpha_comparisons = 0.05,
+  alpha_genes = 0.05,
+  n_perms = 1000,
+  adjust_method = "BH",
+  sort_genes = T
+)
 }
 \arguments{
-\item{obj}{A brainAgeShift object with a not-empty stats slot.}
+\item{obj}{A \code{brainAgeShift} object with a non-empty \code{stats} slot.}
 
-\item{alpha_comparisons}{The level of significance of the comparisons.}
+\item{alpha_comparisons}{Numeric. The significance threshold for selecting
+significant comparisons (adjusted p-value <= \code{alpha_comparisons}). Defaults
+to \code{0.05}.}
 
-\item{alpha_genes}{The level of significance of the genes.}
+\item{alpha_genes}{Numeric. The significance threshold for selecting
+significant genes (adjusted p-value <= \code{alpha_genes}). Defaults to \code{0.05}.}
 
-\item{n_perms}{The number of permutations for running the permutation test.}
+\item{n_perms}{Integer. The number of permutations to perform for the
+permutation test. Defaults to \code{1000}.}
 
-\item{adjust_method}{The p-value adjustment method for the genes' p-values.}
+\item{adjust_method}{Character. The p-value adjustment method to use for
+genes' p-values (e.g. \code{"BH"} for Benjamini-Hochberg or \code{"bonferroni"}).
+Defaults to \code{"BH"}.}
 
-\item{sort_genes}{If genes should be sorted according to weighted
-differences in each one of the sign_genes dataframes. If true, if the log2FC
-of the comparison is positive genes will be sorted in a decreasing fashion,
-and the other way around.}
+\item{sort_genes}{Logical. If \code{TRUE}, genes in each \code{sign_genes} dataframe
+will be sorted by weighted differences. Sorting is performed such that
+positive log2 fold change in the comparison implies decreasing order of
+genes' weighted differences, and viceversa. Defaults to \code{TRUE}.}
 }
 \value{
-A brainAgeShift object with the sign_genes slot filled with a list
-where each item consists on a dataframe of the significant genes
-(p_adj <= alpha_genes) for each one of the significant comparisons
-(p_adj <= alpha_comparisons). This dataframe contains the following columns:
-geneID, difference, coefficient, weighted_diff, p_value and p_adj.
+A \code{brainAgeShift} object with the \code{sign_genes} slot updated. The
+\code{sign_genes} slot contains a list where each element corresponds to a
+significant comparison and is a dataframe of significant genes. The
+dataframes include the following columns:
+\itemize{
+\item \strong{geneID}: the ENSEMBL ID of the gene.
+\item \strong{difference}: the raw mean difference between groups.
+\item \strong{coefficient}: the brain clock coefficient.
+\item \strong{weighted_diff}: the weighted mean difference
+\item \strong{p_value}: the p-value from the permutation test.
+\item \strong{p_adj}: the adjusted p-value.
+}
 }
 \description{
-For each one of the significant comparisons, determine which are the genes
-that are significantly contributing to such shift. For that, the weighted
-mean difference between each group of each significant comparison is computed
-for each gene, and is compared to a null distribution obtained through random
-permutation of the group labels, obtaining a p-value for each gene, which
-is later adjusted.
+For each significant comparison in the \code{stats} slot of a \code{brainAgeShift}
+object, this function identifies the genes that significantly contribute to
+observed shifts. The weighted mean difference between comparison groups is
+calculated for each gene and compared against a null distribution generated
+through random permutations of group labels. P-values are obtained for each
+gene and adjusted for multiple comparisons.
+}
+\examples{
+# Assuming obj is a brainAgeShift object with non-empty stats slot:
+obj <- get_signGenes(obj,
+                     alpha_comparisons = 0.05, 
+                     alpha_genes = 0.01,
+                     n_perms = 1000, 
+                     adjust_method = "BH",
+                     sort_genes = TRUE)
 }

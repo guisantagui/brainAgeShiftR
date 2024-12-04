@@ -2,21 +2,40 @@
 % Please edit documentation in R/brainAgeShiftObj_methods.R
 \name{do_signTest}
 \alias{do_signTest}
-\title{Compute comparison significance.}
+\alias{do_signTest.brainAgeShiftObj}
+\title{Compute statistical significance for predicted age comparisons}
 \usage{
 do_signTest(obj, ...)
+
+\method{do_signTest}{brainAgeShiftObj}(obj, adjust_method = "BH")
 }
 \arguments{
-\item{obj}{A brainAgeShift object with a not-empty metadata slot, a variable
-and at least one comparison.}
+\item{obj}{A \code{brainAgeShift} object with a non-empty \code{metadata}, \code{variable}
+and \code{comparisons} slots.}
 
-\item{adjust_method}{The p-value adjustment method.}
+\item{adjust_method}{A character string specifying the the p-value adjustment
+method. This is passed to \code{p.adjust}, such as \code{"BH"} (Benjamini-Hochberg) or
+\code{"bonferroni"}. Default is \code{"BH"}.}
 }
 \value{
-A brainAgeShift object with the stats slot filled with a dataframe
-containing the results of the statistical analyses for each comparison.
+A \code{brainAgeShift} object with the \code{stats} slot updated with a
+dataframe containing the following columns:
+\itemize{
+\item \strong{comparison}: The name of the comparison.
+\item \strong{p-value}: The p-value from the t-test
+\item \strong{log2FC}: log2 fold change.
+\item \strong{difference}: The raw difference between group means.
+\item \strong{p_adj}: The adjusted p-value.
+}
 }
 \description{
-Compute p-value (t-test), adjusted p-value, log2 fold change and difference
-of each one of the specified comparisons.
+Performs statistical analysis of the transcriptomic ages on the specified
+comparisons within the metadata slot of a \code{brainAgeShift} object. The
+function computes the p-value (t-test), adjusted p-value, log2 fold change
+and difference for each requested comparison.
+}
+\examples{
+# Assuming `obj` is a brainAgeShift object with appropriate metadata
+# and comparisons:
+obj <- do_signTest(obj, adjust_method = "BH")
 }

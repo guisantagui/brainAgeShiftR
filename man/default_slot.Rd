@@ -2,17 +2,24 @@
 % Please edit documentation in R/brainAgeShiftObj_methods.R
 \name{default_slot}
 \alias{default_slot}
+\alias{default_slot<-}
+\alias{default_slot<-.brainAgeShiftObj}
 \title{Change the default_slot}
 \usage{
 default_slot(obj, ...)
+
+default_slot(obj) <- value
+
+\method{default_slot}{brainAgeShiftObj}(obj) <- value
 }
 \arguments{
-\item{obj}{A brainAgeShift object.}
+\item{obj}{A \code{brainAgeShift} object.}
 }
 \description{
 Changes the default_slot, which is the one that will be used by predictAge.
 to compute transcriptomic age.
 }
 \examples{
+# Set default_slot to "norm_counts"
 default_slot(obj) <- "norm_counts"
 }
