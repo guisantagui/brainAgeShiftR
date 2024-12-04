@@ -139,6 +139,8 @@ normalizeCounts.brainAgeShiftObj <- function(obj, useTrainMeans = F){
 #' @return A `brainAgeShift` object with the `frozen_SVAed` slot filled with the
 #' SVAed normalized counts matrix.
 #'
+#' @example examples/normalizeCounts_example.R
+#'
 #' @export
 do_frozenSVA <- function(obj, ...){
         UseMethod("do_frozenSVA")
