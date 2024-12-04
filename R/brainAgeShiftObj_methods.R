@@ -244,6 +244,11 @@ predictAge.brainAgeShiftObj <- function(obj){
                 return(predAge)
         }
         predVec <- apply(normed4Pred, 2, pred, coefVec = mod_coef$coefficients)
+        if (is.null(obj$metadata)){
+                predDF <- data.frame(predicted_age = predVec)
+                rownames(predDF) <- colnames(obj$counts)
+                obj$metadata <- predDF
+        }
         obj$metadata$predicted_age <- predVec
         obj$used_for_preds <- obj$default_slot
         print("Done!")
@@ -288,8 +293,12 @@ do_signTest <- function(obj, ...){
 #' @method do_signTest brainAgeShiftObj
 #' @export
 do_signTest.brainAgeShiftObj <- function(obj, adjust_method = "BH"){
-        if (is.null(obj$metadata)){
-                stop("The object introduced doen't have a metadata slot.",
+        if (is.null(obj$metadata) | any(colnames(obj$metadata) != "predicted_age")){
+                stop("The object introduced doesn't have a proper metadata slot.",
+                     call. = F)
+        }
+        if (is.null(obj$variable) | is.null(obj$comparisons)){
+                stop("The object introduced doesn't have any indicated variable and/or comparisons.",
                      call. = F)
         }
         stats_df <- data.frame(matrix(nrow = 0,

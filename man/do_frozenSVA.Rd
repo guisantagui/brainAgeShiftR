@@ -22,3 +22,10 @@ Predicts SVs based on the ones computed in our training data, and regresses
 them out. Default slot is changed to \code{frozen_SVAed} after running this
 method.
 }
+\examples{
+# Normalize counts using computed quantile means
+obj <- normalizeCounts(obj, useTrainMeans = FALSE)
+
+# Normalize counts using training quantile means
+obj <- normalizeCounts(obj, useTrainMeans = TRUE)
+}

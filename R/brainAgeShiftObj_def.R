@@ -20,21 +20,24 @@
 
 #' Create a brainAgeShift object.
 #'
-#' Creates a brainAgeShift object to do brain transcriptomic age predictions,
-#' and subsequent statistical analyses to detect transcriptomic age-shifting
-#' factors.
+#' Creates a `brainAgeShift` object to perform brain transcriptomic age
+#' predictions and subsequent statistical analyses to detect transcriptomic
+#' age-shifting factors.
 #'
 #' @param counts A matrix of gene counts. Genes in rows, samples in columns. Row
-#'  names must be ENSEMBL IDs
+#' names must be ENSEMBL IDs
 #' @param metadata A data.frame with at least the variable of interest for
 #' comparing transcriptomic ages. Row names must match column names of counts
-#' matrix.
+#' matrix. Defaults to `NULL`. If not stated, the resulting object can't be used
+#' beyond age prediction.
 #' @param variable The column in the metadata dataframe where the comparisons
-#' are stored.
+#' are stored. Defaults to `NULL`. If not stated, the resulting object can't be
+#' used beyond age prediction.
 #' @param comparisons Either a vector of two factors, or a list of multiple
 #' two-factor vectors. First item in each comparison will be initial or base
 #' state during the difference computation, second the final or altered state.
-#'
+#' Defaults to `NULL`. If not stated, the resulting object can't be used beyond
+#' age prediction.
 #' @return A new brainAgeShift object initialized with the required slots and
 #' default values.
 #' @export
@@ -44,8 +47,7 @@ create_brainAgeShiftObj <- function(counts,
                                     comparisons = NULL){
         if(!is.null(metadata)){
                 if (is.null(variable) | is.null(comparisons)){
-                        stop("If metadata is included both variable and comparisons need to be indicated.",
-                             call. = F)
+                        warning("If metadata is included but variable or comparisons are missing this object will only work for doing predictions with the clock.")
                 }
                 if (ncol(counts) != nrow(metadata)){
                         stop("Number of columns of counts and number of rows of metadata differ.",

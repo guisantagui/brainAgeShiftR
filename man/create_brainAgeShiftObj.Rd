@@ -17,21 +17,25 @@ names must be ENSEMBL IDs}
 
 \item{metadata}{A data.frame with at least the variable of interest for
 comparing transcriptomic ages. Row names must match column names of counts
-matrix.}
+matrix. Defaults to \code{NULL}. If not stated, the resulting object can't be used
+beyond age prediction.}
 
 \item{variable}{The column in the metadata dataframe where the comparisons
-are stored.}
+are stored. Defaults to \code{NULL}. If not stated, the resulting object can't be
+used beyond age prediction.}
 
 \item{comparisons}{Either a vector of two factors, or a list of multiple
 two-factor vectors. First item in each comparison will be initial or base
-state during the difference computation, second the final or altered state.}
+state during the difference computation, second the final or altered state.
+Defaults to \code{NULL}. If not stated, the resulting object can't be used beyond
+age prediction.}
 }
 \value{
 A new brainAgeShift object initialized with the required slots and
 default values.
 }
 \description{
-Creates a brainAgeShift object to do brain transcriptomic age predictions,
-and subsequent statistical analyses to detect transcriptomic age-shifting
-factors.
+Creates a \code{brainAgeShift} object to perform brain transcriptomic age
+predictions and subsequent statistical analyses to detect transcriptomic
+age-shifting factors.
 }
