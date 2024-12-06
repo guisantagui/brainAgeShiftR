@@ -458,6 +458,7 @@ get_signGenes.brainAgeShiftObj <- function(obj,
                                            sort_genes = T){
         mod_coef <- .brainAgeShiftR_env$mod_coef
         mod_coef <- mod_coef[mod_coef$coefficients != 0, ]
+        mod_gene_info <- .brainAgeShiftR_env$mod_gene_info
         if(is.null(obj$stats)){
                 stop("The object introduced doen't have a stats slot.",
                      call. = F)
@@ -479,6 +480,21 @@ get_signGenes.brainAgeShiftObj <- function(obj,
                                                                  decreasing = F), ]
                         }
                 }
+                signGenes_info <- mod_gene_info[match(signGenesDF$geneID,
+                                                      mod_gene_info$ensembl_gene_id),
+                                                colnames(mod_gene_info) != "ensembl_gene_id"]
+                signGenesDF <- cbind.data.frame(signGenesDF, signGenes_info)
+                signGenesDF <- signGenesDF[, c("geneID",
+                                               "hgnc_symbol",
+                                               "entrezgene_id",
+                                               "description",
+                                               "difference",
+                                               "coefficient",
+                                               "weighted_diff",
+                                               "p_value",
+                                               "p_adj")]
+                rownames(signGenesDF) <- 1:nrow(signGenesDF)
+                colnames(signGenesDF) <- gsub("geneID", "ensembl_gene_id")
                 signGenesList[[comp]] <- signGenesDF
         }
         obj$sign_genes <- signGenesList
