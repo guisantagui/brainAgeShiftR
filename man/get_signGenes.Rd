@@ -44,7 +44,10 @@ A \code{brainAgeShift} object with the \code{sign_genes} slot updated. The
 significant comparison and is a dataframe of significant genes. The
 dataframes include the following columns:
 \itemize{
-\item \strong{geneID}: the ENSEMBL ID of the gene.
+\item \strong{ensembl_gene_id}: the ENSEMBL ID of the gene.
+\item \strong{entrezgene_id}: the Entrez ID of the gene.
+\item \strong{hgnc_symbol}: the HGNC symbol of the gene.
+\item \strong{description}: the description of the gene's function.
 \item \strong{difference}: the raw mean difference between groups.
 \item \strong{coefficient}: the brain clock coefficient.
 \item \strong{weighted_diff}: the weighted mean difference

@@ -17,7 +17,7 @@ A \code{brainAgeShift} object with the \code{frozen_SVAed} slot filled with the
 SVAed normalized counts matrix.
 }
 \description{
-Applies frozen SVA on the \code{norm_counts} slot of a \code{brainAgeShift} object.\
+Applies frozen SVA on the \code{norm_counts} slot of a \code{brainAgeShift} object.
 Predicts SVs based on the ones computed in our training data, and regresses
 them out. Default slot is changed to \code{frozen_SVAed} after running this
 method.

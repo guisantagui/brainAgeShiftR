@@ -432,7 +432,10 @@ do_permTest <- function(obj, comp, n_perms, adjust_method = "BH"){
 #' significant comparison and is a dataframe of significant genes. The
 #' dataframes include the following columns:
 #' \itemize{
-#'      \item \strong{geneID}: the ENSEMBL ID of the gene.
+#'      \item \strong{ensembl_gene_id}: the ENSEMBL ID of the gene.
+#'      \item \strong{entrezgene_id}: the Entrez ID of the gene.
+#'      \item \strong{hgnc_symbol}: the HGNC symbol of the gene.
+#'      \item \strong{description}: the description of the gene's function.
 #'      \item \strong{difference}: the raw mean difference between groups.
 #'      \item \strong{coefficient}: the brain clock coefficient.
 #'      \item \strong{weighted_diff}: the weighted mean difference
@@ -485,8 +488,8 @@ get_signGenes.brainAgeShiftObj <- function(obj,
                                                 colnames(mod_gene_info) != "ensembl_gene_id"]
                 signGenesDF <- cbind.data.frame(signGenesDF, signGenes_info)
                 signGenesDF <- signGenesDF[, c("geneID",
-                                               "hgnc_symbol",
                                                "entrezgene_id",
+                                               "hgnc_symbol",
                                                "description",
                                                "difference",
                                                "coefficient",
@@ -494,7 +497,9 @@ get_signGenes.brainAgeShiftObj <- function(obj,
                                                "p_value",
                                                "p_adj")]
                 rownames(signGenesDF) <- 1:nrow(signGenesDF)
-                colnames(signGenesDF) <- gsub("geneID", "ensembl_gene_id")
+                colnames(signGenesDF) <- gsub("geneID",
+                                              "ensembl_gene_id",
+                                              colnames(signGenesDF))
                 signGenesList[[comp]] <- signGenesDF
         }
         obj$sign_genes <- signGenesList
