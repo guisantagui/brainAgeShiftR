@@ -18,3 +18,12 @@ if (!require("devtools", quietly = T))
 }
 
 devtools::install_github("guisantagui/brainAgeShiftR")
+```
+
+## Usage
+Here's a basic example of how to use **brainAgeShiftR**
+
+### Load the package
+```r
+library(brainAgeShiftR)
+```
