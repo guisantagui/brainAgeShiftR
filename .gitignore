@@ -1,6 +1,7 @@
 .Rproj.user
 .Rhistory
 .DS_Store
+.ipynb_checkpoints
 inst/brain_clock
 inst/geneNormMeans.csv
 inst/mod_coefs.csv
