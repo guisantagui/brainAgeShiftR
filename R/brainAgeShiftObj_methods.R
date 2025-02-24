@@ -363,7 +363,7 @@ getWeightDiffDF <- function(obj, comp){
 # are computed with a permutation test, obtaining a null distribution by
 # randomly permuting the labels of the comparison. This function is a helper
 # function for get_signGenes.
-do_permTest <- function(obj, comp, n_perms, adjust_method = "BH"){
+do_permTest <- function(obj, comp, n_perms, adjust_method = "BH", alternative = "right-sided"){
         real_weight_df <- getWeightDiffDF(obj, comp)
         perms_df <- data.frame(matrix(ncol = 0, nrow = nrow(real_weight_df),
                                       dimnames = list(rownames(real_weight_df),
@@ -383,7 +383,14 @@ do_permTest <- function(obj, comp, n_perms, adjust_method = "BH"){
                 setTxtProgressBar(pb, i)
         }
         close(pb)
-        pVals <- rowSums(perms_df >= abs(real_weight_df$weighted_diff)) / n_perms
+        if (alternative == "right-sided"){
+                pVals <- rowSums(perms_df >= real_weight_df$weighted_diff) / n_perms
+        }else if (alternative == "left-sided"){
+                pVals <- rowSums(perms_df <= real_weight_df$weighted_diff) / n_perms
+        }else if (alternative == "two-sided"){
+                pVals <- rowSums(abs(perms_df) >= abs(real_weight_df$weighted_diff)) / n_perms
+        }
+
         real_weight_df$p_value <- pVals
         real_weight_df$p_adj <- p.adjust(pVals, method = adjust_method)
         return(real_weight_df)
@@ -470,9 +477,19 @@ get_signGenes.brainAgeShiftObj <- function(obj,
         signGenesList <- list()
         for (i in seq_along(sign_comps$comparison)){
                 comp <- sign_comps$comparison[i]
+                diff <- sign_comps$difference[i]
                 print(sprintf("Obtaining significant genes for %s comparison...",
                               gsub("_", " ", comp)))
-                signGenesDF <- do_permTest(obj, comp, n_perms, adjust_method)
+                if (diff > 0){
+                        alt <- "right-sided"
+                }else{
+                        alt <- "left-sided"
+                }
+                signGenesDF <- do_permTest(obj,
+                                           comp,
+                                           n_perms,
+                                           adjust_method,
+                                           alt)
                 signGenesDF <- signGenesDF[signGenesDF$p_adj <= alpha_genes, ]
                 if(sort_genes){
                         if(obj$stats$difference[obj$stats$comparison == comp] > 0){
