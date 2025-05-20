@@ -26,8 +26,8 @@ default_slot <- function(obj, ...){
 #' @method default_slot<- brainAgeShiftObj
 #' @export
 `default_slot<-.brainAgeShiftObj` <- function(obj, value) {
-        if (!value %in% c("counts", "norm_counts", "frozen_SVAed")) {
-                stop("default_slot must be either counts, norm_counts or frozen_SVAed")
+        if (!value %in% c("counts", "norm_counts")) {
+                stop("default_slot must be either counts or norm_counts")
         }
         obj$default_slot <- value
         obj  # Return the modified object
@@ -123,77 +123,6 @@ normalizeCounts.brainAgeShiftObj <- function(obj, useTrainMeans = F){
         return(obj)
 }
 
-# Apply frozen SVA to the norm_counts matrix. SVs are predicted based on a
-# linear model we obtained with our training data, and are regressed out from
-# the norm_counts matrix.
-
-#' Apply frozen SVA
-#'
-#' Applies frozen SVA on the `norm_counts` slot of a `brainAgeShift` object.
-#' Predicts SVs based on the ones computed in our training data, and regresses
-#' them out. Default slot is changed to `frozen_SVAed` after running this
-#' method.
-#'
-#' @param obj A `brainAgeShift` object.
-#'
-#' @return A `brainAgeShift` object with the `frozen_SVAed` slot filled with the
-#' SVAed normalized counts matrix.
-#'
-#' @example examples/normalizeCounts_example.R
-#'
-#' @export
-do_frozenSVA <- function(obj, ...){
-        UseMethod("do_frozenSVA")
-}
-
-#' @rdname do_frozenSVA
-#' @method do_frozenSVA brainAgeShiftObj
-#' @export
-do_frozenSVA.brainAgeShiftObj <- function(obj){
-        if(is.null(obj$norm_counts)){
-                stop(sprintf("Frozen SVA needs to be applied on norm_counts, and this slot is not available. Run normalizeCounts() on your object before."),
-                     call. = F)
-        }
-        sva_mod_coefs <- .brainAgeShiftR_env$sva_mod_coefs
-        sva_mod_genes <- rownames(sva_mod_coefs)
-        sva_mod_genes <- sva_mod_genes[sva_mod_genes != "(Intercept)"]
-        sva_mod_genes_notInDat <- sva_mod_genes[!sva_mod_genes %in% rownames(obj$norm_counts)]
-        if(length(sva_mod_genes_notInDat) > 0){
-                stop(sprintf("%s genes are not available in the input data. Frozen SVA cannot be applied.",
-                             paste(sva_mod_genes_notInDat, collapse = ", ")),
-                     call. = F)
-        }
-        predMat <- data.frame(t(obj$norm_counts[match(sva_mod_genes,
-                                                      rownames(obj$norm_counts)), ]))
-        pred <- function(expVec, coefVec){
-                predSV <- sum(expVec * coefVec[2:length(coefVec)]) + coefVec[1]
-                return(predSV)
-        }
-        pred_SVs <- apply(sva_mod_coefs,
-                          2,
-                          function(y) apply(predMat,
-                                            1,
-                                            function(x) pred(x, y)))
-        b <- matrix(nrow = 0, ncol = ncol(pred_SVs),
-                    dimnames = list(NULL, colnames(pred_SVs)))
-        for(i in seq_along(colnames(predMat))){
-                form <- paste(colnames(predMat)[i],
-                              paste(colnames(pred_SVs), collapse = " + "),
-                              sep = " ~ ")
-                lm_fit <- lm(as.formula(form), cbind(predMat, pred_SVs))
-                toBind <- coef(lm_fit)[2:length(coef(lm_fit))]
-                toBind <- matrix(toBind, nrow = 1,
-                                 dimnames = list(colnames(predMat)[i],
-                                                 names(toBind)))
-                b <- rbind(b, toBind)
-        }
-        b[is.na(b)] <- 0
-        res <- t(predMat) - b %*% t(pred_SVs)
-        obj$frozen_SVAed <- res
-        default_slot(obj) <- "frozen_SVAed"
-        return (obj)
-}
-
 # Uses norm_counts of brainAgeShiftObj to predict age with the brain clock.
 # Stores result as a new column in the metadata dataframe within the
 # brainAgeShiftObj.
@@ -201,8 +130,8 @@ do_frozenSVA.brainAgeShiftObj <- function(obj){
 #' Predict ages
 #'
 #' Predicts transcriptomic ages using the brain transcriptomic clock. The method
-#' operates based on the default slot, which must be one of `counts`,
-#' `norm_counts` or `frozen_SVAed`.
+#' operates based on the default slot, which must be one of `counts` or
+#' `norm_counts`.
 #'
 #' @param obj A `brainAgeShift` object.
 #'

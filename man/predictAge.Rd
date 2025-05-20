@@ -18,8 +18,8 @@ metadata slot's dataframe.
 }
 \description{
 Predicts transcriptomic ages using the brain transcriptomic clock. The method
-operates based on the default slot, which must be one of \code{counts},
-\code{norm_counts} or \code{frozen_SVAed}.
+operates based on the default slot, which must be one of \code{counts} or
+\code{norm_counts}.
 }
 \examples{
 obj <- predictAge(obj)
