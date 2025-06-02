@@ -41,7 +41,7 @@ baso_old_vs_young <- create_brainAgeShiftObj(counts = example_counts,
 ```
 ### Normalize the counts data
 ```r
-baso_old_vs_young <- normalizeCounts(baso_old_vs_young)
+baso_old_vs_young <- normalizeCounts(baso_old_vs_young, useTrainMeans = F)
 ```
 ### Compute transcriptomic age
 ```r
