@@ -442,7 +442,9 @@ get_signGenes.brainAgeShiftObj <- function(obj,
                                                "weighted_diff",
                                                "p_value",
                                                "p_adj")]
-                rownames(signGenesDF) <- 1:nrow(signGenesDF)
+                if (nrow(signGenesDF) > 0){
+                        rownames(signGenesDF) <- 1:nrow(signGenesDF)
+                }
                 colnames(signGenesDF) <- gsub("geneID",
                                               "ensembl_gene_id",
                                               colnames(signGenesDF))
