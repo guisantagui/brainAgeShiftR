@@ -28,7 +28,7 @@ Here's a basic example of how to use **brainAgeShiftR**
 library(brainAgeShiftR)
 ```
 ### Load example data
-The example data consists on transcriptomic data originating from the DLPFC of healthy individuals. The included samples consist in a selection of samples from the BrainSeq Phase 1 study[1]. They are grouped in young (age <= 40) and old (age >= 70).
+The example data consists on transcriptomic data originating from the DLPFC of healthy individuals. The included samples are a selection from the BrainSeq Phase 1 study[1]. They are grouped in young (age <= 40) and old (age >= 70).
 ```r
 data(example_data)
 ```
@@ -56,6 +56,7 @@ baso_old_vs_young <- do_signTest(baso_old_vs_young, adjust_method = "BH")
 baso_old_vs_young$stats
 ```
 ### Get the genes that are significantly contributing to the shift
+In some cases, the observed shifts in transcriptional age can be caused by a few number of genes that dominate. This function tests if that is the case by assessing if the weighted difference of expression is greater than what would be by chance.
 ```r
 # Compute the genes that are contributing to the significant(s) age shift(s).
 baso_old_vs_young <- get_signGenes(baso_old_vs_young, alpha_comparisons = .05)
