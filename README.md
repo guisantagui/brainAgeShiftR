@@ -56,7 +56,7 @@ baso_old_vs_young <- do_signTest(baso_old_vs_young, adjust_method = "BH")
 baso_old_vs_young$stats
 ```
 ### Get the genes that are significantly contributing to the shift
-In some cases, the observed shifts in transcriptional age can be caused by a few number of genes that dominate. This function tests if that is the case by assessing if the weighted difference of expression is greater than what would be by chance. If the signal is diffuse, it be possible that none gene dominates and therefore, nothing is significant. This is the case in the example data. In this situation, the `alpha_gene` parameter can be set to a higher value, in order to get the genes sorted by their contribution to the age shift.
+In some cases, the observed shifts in transcriptional age are driven by a small number of dominant genes. The function `get_signGenes` tests whether any individual gene's weighted expression difference contributes more than expected by chance. However, in many biological scenarios, the signal is diffuse: no single gene dominates, but many contribute weakly and collectively. In such cases, no individual gene may reach statistical significance. This is what happens in the example dataset. If there's still interest in identifying and ranking genes by their relative contribution to the age shift (even if not statistically significant), the `alpha_gene` parameter can increased to return a sorted dataframe of genes based on their weighted contribution.
 ```r
 # Compute the genes that are contributing to the significant(s) age shift(s).
 baso_old_vs_young <- get_signGenes(baso_old_vs_young, alpha_comparisons = .05, alpha_genes = 0.1)
